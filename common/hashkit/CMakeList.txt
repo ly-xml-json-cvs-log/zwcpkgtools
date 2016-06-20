@@ -1,0 +1,9 @@
+PROJECT(hashkit)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.1)
+
+# see cmake --help-policy cmp0015
+CMAKE_POLICY(SET CMP0015 NEW)
+
+SET(CMAKE_BUILD_TYPE Release)
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -m64 -std=c++11 -lrt -static-libgcc -static-libstdc++")
+
