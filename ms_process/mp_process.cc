@@ -12,8 +12,8 @@
 #include "log/MessageLog.hh"
 #include "daemonize.hh"
 
-int count;  //子进程创建成功数量 
-int fcount; //子进程创建失败数量 
+int count;  //子进程创建成功数量
+int fcount; //子进程创建失败数量
 int scount; //子进程回收数量
 
 MessageLog g_log(std::cout);
@@ -24,21 +24,24 @@ void sig_chld(int signo)
 {
     pid_t chldpid;//子进程id
     int stat;//子进程的终止状态
-    
+
     //子进程回收，避免出现僵尸进程
-    while((chldpid = wait(&stat)>0))
+    while((childpid = waitpid(-1, &stat, WNOHANG)) > 0)
     {
+        IOM_LOG(INFO) << "process exit, pid=" << childpid << ", stat= " << stat << std::endl;
         scount++;
     }
 }
 
-void start_new_process()
+int start_new_process()
 {
     while(true)
     {
         IOM_LOG(WARN) << "eeeeeeeeeeeeeeeeeee: " << std::endl;
-	usleep(100);
+        usleep(100);
     }
+
+    return 0;
 }
 
 class SharedCoutPtr
@@ -46,13 +49,13 @@ class SharedCoutPtr
 public:
     SharedCoutPtr(std::streambuf* xstream) : mXstream(xstream)
     {
-        
+
     }
 
     ~SharedCoutPtr()
     {
         std::cout.rdbuf(mXstream);
-    } 
+    }
 
 private:
     std::streambuf* mXstream;
@@ -60,12 +63,19 @@ private:
 
 int main()
 {
-    g_log.setSeverity(5);
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGHUP,  SIG_IGN);
+    signal(SIGTERM, SIG_IGN);
+
     signal(SIGCHLD,sig_chld);
+
+    g_log.setSeverity(5);
     MessageLog log(std::cout);
 
     // 创建daemon守护进程
-    if (daemon(0, 0)) 
+    if (daemon(0, 0))
     {
         perror("daemon");
         return -1;
@@ -74,17 +84,17 @@ int main()
     std::ofstream file("/tmp/std_cout_rdbuf.txt");
     SharedCoutPtr xcout(std::cout.rdbuf(file.rdbuf()));
 
-    IOM_LOG(INFO) << "demon pid = " << getpid() << std::endl;
+    IOM_LOG(INFO) << "demon start."<< std::endl;
     for(int i=0;i<10;i++)
     {
         pid_t pid=fork();
 
-	if (pid == -1) {
+        if (pid == -1) {
             IOM_LOG(ERROR) << "fork error" << std::endl;
             break;
         } else if (pid == 0) {
             // 子进程
-            IOM_LOG(ERROR) << "ppid= " << getppid() << std::endl;
+            IOM_LOG(ERROR) << "childern procss."<< std::endl;
             start_new_process();
             break;
         } else {
