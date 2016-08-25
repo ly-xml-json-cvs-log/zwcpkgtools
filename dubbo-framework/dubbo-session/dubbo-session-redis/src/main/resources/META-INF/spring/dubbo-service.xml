@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<import resource="classpath*:xml/spring-*.xml" />
+
+    <dubbo:application name="${dubbo.application.name}" owner="${dubbo.application.owner}" organization="niiwoo"/>
+
+    <dubbo:registry address="${dubbo.registry.address}"/>
+    
+    <!-- 监控中心 -->
+	<dubbo:monitor protocol="${dubbo.monitor.protocol}"/>
+    
+    <!-- 注解扫描路径 -->       
+	<dubbo:annotation package="com.niiwoo.service.dubbo" />
+	
+	<dubbo:protocol name="dubbo" serialization="kryo" port="${dubbo.protocol.port}"/>
+	
+	<dubbo:protocol name="rest" port="${rest.protocol.port}" threads="${rest.protocol.threads}" 
+		contextpath="services" server="netty" client="netty" accepts="${rest.protocol.accepts}"/>
+	
+</beans>
